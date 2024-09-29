@@ -26,6 +26,9 @@ public class PlayerController : MonoBehaviour
 
         // transform.translate() -  local 좌표계 기준으로 연산해줌.
 
+        // Vector3 vec3 = new Vector3();
+        // float len = vec3.magnitude; // 벡터의 크기를 반환
+        // Vector3 dir = vec3.normalized; // 정규화된 벡터를 반환
 
         if (Input.GetKey(KeyCode.W))
             transform.Translate(Vector3.forward * deltaSpeed);
