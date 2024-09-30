@@ -5,10 +5,14 @@ using UnityEngine;
 public class Managers : MonoBehaviour
 {
     static Managers s_instance; // 유일성이 보장된다.
-    public static Managers Instance { get { Init(); return s_instance; } }
+    // 외부에서 객체를 참조하길 원하지 않기 때문에 접근 지정자를 수정했다.
+    static Managers Instance { get { Init(); return s_instance; } }
 
+    InputManager _input = new InputManager();
+    // 프로퍼티를 사용해서 깔끔하게 불러올 수 있도록.
+    // 유일한 객체인 s_instance의 멤버 _input을 반환한다.
+    public static InputManager Input { get { return Instance._input; } }
 
-    // Start is called before the first frame update
     void Start()
     {
         // 매니저 객체 가져오기
@@ -16,10 +20,10 @@ public class Managers : MonoBehaviour
 
     }
 
-    // Update is called once per frame
     void Update()
     {
-        
+        // 매 틱마다 키 매니저의 Update()를 호출시킴.
+        _input.OnUpdate();
     }
 
     static void Init()
