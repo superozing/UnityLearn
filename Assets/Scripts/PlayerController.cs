@@ -13,7 +13,7 @@ public class PlayerController : MonoBehaviour
 
     void Start()
     {
-        // 잡기술. 여러 번 이벤트를 등록하지 않도록 이미 등록된 이벤트가 있을 경우 빼는 처리를 해주는 것.
+        // 꼭 필요한 기술. 여러 번 이벤트를 등록하지 않도록 이미 등록된 이벤트가 있을 경우 빼는 처리를 해주는 것.
         // 근데 애초에 이런 코드로 돌려막기를 하는 것 보다는 직접적인 원인을 찾아서 제거하는 것이 맞지 않을까?
         Managers.Input.KeyAction -= OnKeyboard; 
 
