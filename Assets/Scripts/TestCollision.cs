@@ -39,6 +39,7 @@ public class TestCollision : MonoBehaviour
 
     void Update()
     {
+        /*
         // Raycast 활용: spring arm 등이 있다.
 
         // Owner Transform forward Vector 구하기
@@ -59,11 +60,11 @@ public class TestCollision : MonoBehaviour
         // 반환으로 Ray의 hit 성공 여부를 bool로 반환한다.
         // RaycastHit 구조체를 통해서 자세한 충돌 정보를 가져올 수 있다.
         
-        /* // 레이캐스트 예시 코드
+        // 레이캐스트 예시 코드
         RaycastHit hit;
         if (Physics.Raycast(transform.position + Vector3.up, lookDirection, out hit, 10))
             Debug.Log($"RayCast {hit.collider.gameObject.name}");
-        */
+        
 
         // RaycastAll - 레이를 쏘고, 레이에 충돌한 모오오오오오든 물체를 RaycastHit 배열로 반환하는 함수.
         // 이건 out이 아니고 return으로 받아오는거네요. 뭔가 통일성 없어 보이네요.
@@ -76,6 +77,37 @@ public class TestCollision : MonoBehaviour
         {
             Debug.Log($"RayCast {hitItem.collider.gameObject.name}");
         }
+        */
+
+        //===============
+        // 투영의 개념
+        //===============
+
+        // 로컬 <-> 월드 <-> 스크린
+        // 로컬 좌표계는 오브젝트 개인, 특정 물체를 기준으로 한다.
+        // 월드 좌표계는 모든 오브젝트가 공유하는 하나의 좌표계이다.
+
+        // Debug.Log(Input.mousePosition); // Screen
+        Debug.Log(Camera.main.ScreenToViewportPoint(Input.mousePosition)); // Viewport, "비율"
+
+
+        // 유니티는 절두체 컬링과 오클루전 컬링을 통해 최적화 한다.
+        // Camera near(가장 가까운 곳), far(가장 먼 곳) 조절 가능
+        
+        // 월드 상에서 뷰포트에 투영을 할 때, 실제 화면보다 살짝 뒤에 있는 시선으로 전부 투영을 시킨다.
+        // rasterizer가 vertex에 따라서 그릴 픽셀을 계산해요.
+
+        // 이쯤에서 다시 떠올려보는 렌더링 파이프라인
+        // IA VS HS TS DS GS RS PS OM
+        // IA - VB IB set
+        // VS - 정점 정보세팅
+        // HS - 정점 분할 레벨 세팅
+        // TS - 테셀레이션(분할 레벨에 따라 분할하기)
+        // DS - TS에서 분할한 정점 정보 다시 세팅
+        // GS - 정점 분할, 추가, 삭제에 사용
+        // RS - 정점 정보를 기반으로 화면에 그려질 픽셀 구하기, 정점 정보 보간
+        // PS - 입력된 머터리얼과 보간된 정점 정보, 텍스쳐를 기반으로 픽셀 색상 결정
+        // OM - 깊이 버퍼에 기록, 깊이 정보에 따라 해당 픽셀을 그릴 지 말 지 결정
 
     }
 }
