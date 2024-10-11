@@ -88,12 +88,11 @@ public class TestCollision : MonoBehaviour
         // 월드 좌표계는 모든 오브젝트가 공유하는 하나의 좌표계이다.
 
         // Debug.Log(Input.mousePosition); // Screen
-        Debug.Log(Camera.main.ScreenToViewportPoint(Input.mousePosition)); // Viewport, "비율"
-
+        //Debug.Log(Camera.main.ScreenToViewportPoint(Input.mousePosition)); // Viewport, "비율"
 
         // 유니티는 절두체 컬링과 오클루전 컬링을 통해 최적화 한다.
         // Camera near(가장 가까운 곳), far(가장 먼 곳) 조절 가능
-        
+
         // 월드 상에서 뷰포트에 투영을 할 때, 실제 화면보다 살짝 뒤에 있는 시선으로 전부 투영을 시킨다.
         // rasterizer가 vertex에 따라서 그릴 픽셀을 계산해요.
 
@@ -108,6 +107,41 @@ public class TestCollision : MonoBehaviour
         // RS - 정점 정보를 기반으로 화면에 그려질 픽셀 구하기, 정점 정보 보간
         // PS - 입력된 머터리얼과 보간된 정점 정보, 텍스쳐를 기반으로 픽셀 색상 결정
         // OM - 깊이 버퍼에 기록, 깊이 정보에 따라 해당 픽셀을 그릴 지 말 지 결정
+
+        //===============
+        // Raycasting #2
+        //===============
+
+        // 인자로 0 -> 왼 쪽 마우스
+        if (Input.GetMouseButtonDown(0))
+        {
+            // 뷰포트 상에서 클릭을 하면 cam pos에서 클릭한 dir로 ray를 발사한다.
+            // 이 때 충돌한 오브젝트를 인스펙터에 띄워줘요.
+
+
+            // 스크린 좌표를 월드 기준 좌표로 변환해요.
+            // z로 0을 넣으면 카메라의 좌표를 반환해요.
+            // near 값을 넣어서 투영되는 부분의 정확한 월드 기준 좌표를 알 수 있어요.
+            Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, Camera.main.nearClipPlane));
+
+            Vector3 CamPos = Camera.main.transform.position;
+
+            //// MousePos - CamPos = Cam to Mouse Direction
+            //// 카메라가 near 평면을 비추는 모습을 상상하면 이해가 쉽다.
+            Vector3 dir = (mouseWorldPos - CamPos).normalized; // 방향 벡터 정규화
+
+
+            // 위의 세 줄을 간단하게 아래의 한 줄로 치환할 수 있다.
+
+            // ray 시각화
+            Debug.DrawRay(CamPos, dir * 100.0f, Color.red, 1.0f);
+
+            RaycastHit hit;
+            if (Physics.Raycast(CamPos, dir, out hit, 100.0f)) // ray max duration 지정
+            {
+                Debug.Log($"RayCast Camera @ {hit.collider.gameObject.name}");
+            }
+        }
 
     }
 }
