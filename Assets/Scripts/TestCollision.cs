@@ -122,16 +122,20 @@ public class TestCollision : MonoBehaviour
             // 스크린 좌표를 월드 기준 좌표로 변환해요.
             // z로 0을 넣으면 카메라의 좌표를 반환해요.
             // near 값을 넣어서 투영되는 부분의 정확한 월드 기준 좌표를 알 수 있어요.
-            //Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, Camera.main.nearClipPlane));
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
             Vector3 CamPos = Camera.main.transform.position;
 
             // ray 시각화
             Debug.DrawRay(CamPos, ray.direction * 100.0f, Color.red, 1.0f);
 
             RaycastHit hit;
-            if (Physics.Raycast(ray, out hit, 100.0f)) // ray max duration 지정
+
+            // | -> or 비트연산자. 두 비트중 하나라도 1이면 1
+            LayerMask layerMask = LayerMask.GetMask("Monster") | LayerMask.GetMask("Wall");
+            int Mask = (1 << 6) | (1 << 7);
+
+            // 충돌시킬 레이어 비트 기록
+            if (Physics.Raycast(ray, out hit, 100.0f, layerMask)) // ray max duration 지정
             {
                 Debug.Log($"RayCast Camera @ {hit.collider.gameObject.name}");
             }
