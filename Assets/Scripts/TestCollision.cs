@@ -132,7 +132,7 @@ public class TestCollision : MonoBehaviour
 
             // | -> or 비트연산자. 두 비트중 하나라도 1이면 1
             LayerMask layerMask = LayerMask.GetMask("Monster") | LayerMask.GetMask("Wall");
-            int Mask = (1 << 6) | (1 << 7);
+            // int Mask = (1 << 6) | (1 << 7); // 위 코드와 같은 내용을 실행
 
             // 충돌시킬 레이어 비트 기록
             if (Physics.Raycast(ray, out hit, 100.0f, layerMask)) // ray max duration 지정
