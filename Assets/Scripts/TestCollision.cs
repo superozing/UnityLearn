@@ -121,6 +121,7 @@ public class TestCollision : MonoBehaviour
 
             // 스크린 좌표를 월드 기준 좌표로 변환해요.
             // z로 0을 넣으면 카메라의 좌표를 반환해요.
+            // 왜일지 생각해보았다. 방향 벡터를 구할 때 위치가 같으면 vec3(0,0,0)이 나와서 그런 것 같아요.
             // near 값을 넣어서 투영되는 부분의 정확한 월드 기준 좌표를 알 수 있어요.
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             Vector3 CamPos = Camera.main.transform.position;

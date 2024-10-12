@@ -9,16 +9,21 @@ public class PlayerController : MonoBehaviour
     [SerializeField] // 를 사용하면 private도 에디터에 표시시킬 수 있다.
     float _speed = 10.0f;
 
-    float _yAngle = 0.0f;
+    bool _isMoveToDest = false;
+    Vector3 _destPos = Vector3.zero;
 
     void Start()
     {
-        // 꼭 필요한 기술. 여러 번 이벤트를 등록하지 않도록 이미 등록된 이벤트가 있을 경우 빼는 처리를 해주는 것.
+        // 여러 번 이벤트를 등록하지 않도록 이미 등록된 이벤트가 있을 경우 빼는 처리를 해주는 것.
         // 근데 애초에 이런 코드로 돌려막기를 하는 것 보다는 직접적인 원인을 찾아서 제거하는 것이 맞지 않을까?
         Managers.Input.KeyAction -= OnKeyboard; 
 
         // 입력 매니저 이벤트에 델리게이트를 등록시킴.
         Managers.Input.KeyAction += OnKeyboard;
+
+
+        Managers.Input.MouseAction -= OnMouseClicked;
+        Managers.Input.MouseAction += OnMouseClicked;
     }
 
     // GameObject (Player)
@@ -26,6 +31,7 @@ public class PlayerController : MonoBehaviour
     // PlayerController (current)
     void Update()
     {
+        #region 주석
         // =======================
         //  Transform, translate
         // =======================
@@ -67,7 +73,25 @@ public class PlayerController : MonoBehaviour
 
         // euler angle -> quaternion으로 변환하는 함수
         // transform.rotation = Quaternion.Euler(new Vector3(0.0f, _yAngle, 0.0f));
+        #endregion
 
+        if (_isMoveToDest)
+        {
+            Vector3 unnormDir = _destPos - transform.position;
+
+            // float 오차 범위를 생각해서 매직 넘버 사용
+            if (unnormDir.magnitude < 0.0001f) 
+            {
+                _isMoveToDest = false;
+                return;
+            }
+
+            // 더 큰 범위를 이동하지 않도록 clamp
+            float moveDist = Math.Clamp(_speed * Time.deltaTime, 0, unnormDir.magnitude);
+
+            transform.position += unnormDir.normalized * moveDist;
+            transform.LookAt(_destPos);
+        }
 
     }
 
@@ -75,7 +99,6 @@ public class PlayerController : MonoBehaviour
     void OnKeyboard()
     {
         float deltaSpeed = Time.deltaTime * _speed;
-        _yAngle += deltaSpeed * 100;
 
         if (Input.GetKey(KeyCode.W))
         {
@@ -111,6 +134,29 @@ public class PlayerController : MonoBehaviour
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(Vector3.right), 0.2f);
             //transform.Translate(Vector3.forward * deltaSpeed);
             transform.position += Vector3.right * deltaSpeed;
+        }
+
+        _isMoveToDest = false;
+    }
+
+    void OnMouseClicked(Define.MouseEvent e)
+    {
+        if (e != Define.MouseEvent.Click)
+            return;
+
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        Debug.DrawRay(Camera.main.transform.position, ray.direction * 100.0f, Color.red, 1.0f);
+
+        RaycastHit hit;
+        if (Physics.Raycast(ray, out hit, 100.0f, LayerMask.GetMask("Wall")))
+        {
+
+            _isMoveToDest = true;
+            _destPos = hit.point;
+
+
+
+            //Debug.Log($"RayCast Camera @ {hit.collider.gameObject.name}");
         }
     }
 }
