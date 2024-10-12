@@ -29,23 +29,28 @@ public class CameraController : MonoBehaviour
     {
         if (_mode == Define.CameraMode.QuaterView)
         {
-            transform.position = _player.transform.position + _delta;
-            transform.LookAt(_player.transform); // 시선 벡터를 player pos로 바라보게 해요. 
-            // 사실 위 같은 함수의 내부 구현은 엄청 간단할 수 있다. pos 끼리 빼주기만 하면 될 것 같은 느낌이 든다.
+            RaycastHit hit;
+            if (Physics.Raycast(transform.position, _delta, out hit, _delta.magnitude, LayerMask.GetMask("Wall")))
+            {
+                float dist = (hit.point - _player.transform.position).magnitude * 0.8f; // 벽보다 살짝 앞의 위치를 잡기 위해 0.8 곱함.
+                transform.position = _player.transform.position + _delta.normalized;
+            }
+            else
+            {
+                transform.position = _player.transform.position + _delta;
+                transform.LookAt(_player.transform); // 시선 벡터를 player pos로 바라보게 해요. 
+                // LookAt()의 내부 구현은 엄청 간단할 수 있다. pos 끼리 빼주기만 하면 될 것 같은 느낌이 든다.
+            }
+
         }
     }
 
 
     //=======================
 
-
     public void SetQuaterView(Vector3 delta)
     {
         _delta = delta;
         _mode = Define.CameraMode.QuaterView;
     }
-
-
-
-
 }

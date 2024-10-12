@@ -39,6 +39,7 @@ public class TestCollision : MonoBehaviour
 
     void Update()
     {
+        #region
         /*
         // Raycast 활용: spring arm 등이 있다.
 
@@ -107,6 +108,8 @@ public class TestCollision : MonoBehaviour
         // RS - 정점 정보를 기반으로 화면에 그려질 픽셀 구하기, 정점 정보 보간
         // PS - 입력된 머터리얼과 보간된 정점 정보, 텍스쳐를 기반으로 픽셀 색상 결정
         // OM - 깊이 버퍼에 기록, 깊이 정보에 따라 해당 픽셀을 그릴 지 말 지 결정
+
+        #endregion
 
         //===============
         // Raycasting #2
