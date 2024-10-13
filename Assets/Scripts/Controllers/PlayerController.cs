@@ -75,8 +75,12 @@ public class PlayerController : MonoBehaviour
         // transform.rotation = Quaternion.Euler(new Vector3(0.0f, _yAngle, 0.0f));
         #endregion
 
+        Animator anim = GetComponent<Animator>();
+
         if (_isMoveToDest)
         {
+            anim.Play("RUN");
+
             Vector3 unnormDir = _destPos - transform.position;
 
             // float 오차 범위를 생각해서 매직 넘버 사용
@@ -92,6 +96,11 @@ public class PlayerController : MonoBehaviour
             transform.position += unnormDir.normalized * moveDist;
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(unnormDir), 20 * Time.deltaTime);
         }
+        else
+        {
+            anim.Play("WAIT");
+        }
+
 
     }
 
@@ -141,8 +150,8 @@ public class PlayerController : MonoBehaviour
 
     void OnMouseClicked(Define.MouseEvent e)
     {
-        if (e != Define.MouseEvent.Click)
-            return;
+        //if (e != Define.MouseEvent.Click)
+        //    return;
 
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         Debug.DrawRay(Camera.main.transform.position, ray.direction * 100.0f, Color.red, 1.0f);
