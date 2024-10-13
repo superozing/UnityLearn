@@ -30,10 +30,10 @@ public class CameraController : MonoBehaviour
         if (_mode == Define.CameraMode.QuaterView)
         {
             RaycastHit hit;
-            if (Physics.Raycast(transform.position, _delta, out hit, _delta.magnitude, LayerMask.GetMask("Wall")))
+            if (Physics.Raycast(_player.transform.position, _delta, out hit, _delta.magnitude, LayerMask.GetMask("Wall")))
             {
                 float dist = (hit.point - _player.transform.position).magnitude * 0.8f; // 벽보다 살짝 앞의 위치를 잡기 위해 0.8 곱함.
-                transform.position = _player.transform.position + _delta.normalized;
+                transform.position = _player.transform.position + _delta.normalized * dist;
             }
             else
             {
