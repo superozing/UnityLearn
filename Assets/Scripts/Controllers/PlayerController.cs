@@ -26,6 +26,8 @@ public class PlayerController : MonoBehaviour
         Managers.Input.MouseAction += OnMouseClicked;
     }
 
+    float wait_run_ratio = 0.0f;
+
     // GameObject (Player)
     // Transform
     // PlayerController (current)
@@ -79,8 +81,6 @@ public class PlayerController : MonoBehaviour
 
         if (_isMoveToDest)
         {
-            anim.Play("RUN");
-
             Vector3 unnormDir = _destPos - transform.position;
 
             // float 오차 범위를 생각해서 매직 넘버 사용
@@ -95,11 +95,15 @@ public class PlayerController : MonoBehaviour
 
             transform.position += unnormDir.normalized * moveDist;
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(unnormDir), 20 * Time.deltaTime);
+
+            wait_run_ratio = Mathf.Lerp(wait_run_ratio, 1, 20.0f * Time.deltaTime);
         }
         else
         {
-            anim.Play("WAIT");
+            wait_run_ratio = Mathf.Lerp(wait_run_ratio, 0, 20.0f * Time.deltaTime);
         }
+        anim.Play("WAIT_RUN");
+        anim.SetFloat("wait_run_ratio", wait_run_ratio);
 
 
     }
