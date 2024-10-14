@@ -9,24 +9,69 @@ public class PlayerController : MonoBehaviour
     [SerializeField] // 를 사용하면 private도 에디터에 표시시킬 수 있다.
     float _speed = 10.0f;
 
-    bool _isMoveToDest = false;
     Vector3 _destPos = Vector3.zero;
+    PlayerState _state = PlayerState.Idle;
+
+    public enum PlayerState
+    {
+        Die,
+        Moving,
+        Idle,
+    }
+
 
     void Start()
     {
-        // 여러 번 이벤트를 등록하지 않도록 이미 등록된 이벤트가 있을 경우 빼는 처리를 해주는 것.
-        // 근데 애초에 이런 코드로 돌려막기를 하는 것 보다는 직접적인 원인을 찾아서 제거하는 것이 맞지 않을까?
-        Managers.Input.KeyAction -= OnKeyboard; 
-
         // 입력 매니저 이벤트에 델리게이트를 등록시킴.
-        Managers.Input.KeyAction += OnKeyboard;
-
-
         Managers.Input.MouseAction -= OnMouseClicked;
         Managers.Input.MouseAction += OnMouseClicked;
     }
 
     float wait_run_ratio = 0.0f;
+
+#region States
+    void UpdateDie()
+    {
+    }
+
+    void UpdateMoving()
+    {
+        Vector3 unnormDir = _destPos - transform.position;
+
+        // float 오차 범위를 생각해서 매직 넘버 사용
+        // 만약 destPos에 도착했을 경우, Idle state로 변경
+        if (unnormDir.magnitude < 0.0001f)
+        {
+            _state = PlayerState.Idle; 
+        }
+        else
+        {
+            // 더 큰 범위를 이동하지 않도록 clamp
+            float moveDist = Math.Clamp(_speed * Time.deltaTime, 0, unnormDir.magnitude);
+            transform.position += unnormDir.normalized * moveDist;
+            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(unnormDir), 20 * Time.deltaTime);
+        }
+
+        // anim set
+        wait_run_ratio = Mathf.Lerp(wait_run_ratio, 1, 20.0f * Time.deltaTime);
+
+        Animator anim = GetComponent<Animator>();
+        anim.Play("WAIT_RUN");
+        anim.SetFloat("wait_run_ratio", wait_run_ratio);
+    }
+
+    void UpdateIdle()
+    {
+        // anim set
+        wait_run_ratio = Mathf.Lerp(wait_run_ratio, 0, 20.0f * Time.deltaTime);
+
+        Animator anim = GetComponent<Animator>();
+        anim.Play("WAIT_RUN");
+        anim.SetFloat("wait_run_ratio", wait_run_ratio);
+    }
+
+#endregion
+
 
     // GameObject (Player)
     // Transform
@@ -77,85 +122,25 @@ public class PlayerController : MonoBehaviour
         // transform.rotation = Quaternion.Euler(new Vector3(0.0f, _yAngle, 0.0f));
         #endregion
 
-        Animator anim = GetComponent<Animator>();
-
-        if (_isMoveToDest)
+        switch (_state)
         {
-            Vector3 unnormDir = _destPos - transform.position;
-
-            // float 오차 범위를 생각해서 매직 넘버 사용
-            if (unnormDir.magnitude < 0.0001f) 
-            {
-                _isMoveToDest = false;
-                return;
-            }
-
-            // 더 큰 범위를 이동하지 않도록 clamp
-            float moveDist = Math.Clamp(_speed * Time.deltaTime, 0, unnormDir.magnitude);
-
-            transform.position += unnormDir.normalized * moveDist;
-            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(unnormDir), 20 * Time.deltaTime);
-
-            wait_run_ratio = Mathf.Lerp(wait_run_ratio, 1, 20.0f * Time.deltaTime);
-        }
-        else
-        {
-            wait_run_ratio = Mathf.Lerp(wait_run_ratio, 0, 20.0f * Time.deltaTime);
-        }
-        anim.Play("WAIT_RUN");
-        anim.SetFloat("wait_run_ratio", wait_run_ratio);
-
-
-    }
-
-    // 만약 키 입력이 있을 경우에만 해당 함수의 내용을 실행하기 위해서 입력 매니저 이벤트에 델리게이트를 등록시킴.
-    void OnKeyboard()
-    {
-        float deltaSpeed = Time.deltaTime * _speed;
-
-        if (Input.GetKey(KeyCode.W))
-        {
-            // LookRotation() - 바라보는 방향(아마 로컬 기준의 전방 벡터) 설정하는 함수
-            // transform.rotation = Quaternion.LookRotation(Vector3.forward); // Vector3.forward는 월드 기준 좌표이다.
-            // 하지만 위와 같은 함수의 동작은 너무 딱딱 맞추어 움직이는 느낌이 난다.
-            // 선형 보간 함수를 사용해서 부드러운 동작을 만들 수 있다.
-            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(Vector3.forward), 0.2f);
-
-            // 플레이어 전방 벡터가 선형적으로 달라지고 있기 때문에 전방 벡터에 더해주는 것은 회전중일 때 전방으로만 가는 것이 아닌, 다른 방향으로 이동하게 된다.
-            // transform.Translate(Vector3.forward * deltaSpeed);
-
-            // translate를 사용해서 움직이는 것이 아닌, forward벡터에 speed를곱하고 position += 연산을 해주는 것이 자연스럽다.
-            transform.position += Vector3.forward * deltaSpeed;
-        }
-        if (Input.GetKey(KeyCode.S))
-        {
-            //transform.rotation = Quaternion.LookRotation(Vector3.back);
-            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(Vector3.back), 0.2f);
-            // transform.Translate(Vector3.forward * deltaSpeed);
-            transform.position += Vector3.back * deltaSpeed;
-        }
-        if (Input.GetKey(KeyCode.A))
-        {
-            //transform.rotation = Quaternion.LookRotation(Vector3.left);
-            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(Vector3.left), 0.2f);
-            // transform.Translate(Vector3.forward * deltaSpeed);
-            transform.position += Vector3.left * deltaSpeed;
-        }
-        if (Input.GetKey(KeyCode.D))
-        {
-            //transform.rotation = Quaternion.LookRotation(Vector3.right);
-            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(Vector3.right), 0.2f);
-            //transform.Translate(Vector3.forward * deltaSpeed);
-            transform.position += Vector3.right * deltaSpeed;
+            case PlayerState.Die:
+                UpdateDie();
+                break;
+            case PlayerState.Moving:
+                UpdateMoving();
+                break;
+            case PlayerState.Idle:
+                UpdateIdle();
+                break;
         }
 
-        _isMoveToDest = false;
     }
 
     void OnMouseClicked(Define.MouseEvent e)
     {
-        //if (e != Define.MouseEvent.Click)
-        //    return;
+        if (_state == PlayerState.Die)
+            return;
 
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         Debug.DrawRay(Camera.main.transform.position, ray.direction * 100.0f, Color.red, 1.0f);
@@ -163,13 +148,8 @@ public class PlayerController : MonoBehaviour
         RaycastHit hit;
         if (Physics.Raycast(ray, out hit, 100.0f, LayerMask.GetMask("Wall")))
         {
-
-            _isMoveToDest = true;
             _destPos = hit.point;
-
-
-
-            //Debug.Log($"RayCast Camera @ {hit.collider.gameObject.name}");
+            _state = PlayerState.Moving;  // state를 moving으로 변경
         }
     }
 }
