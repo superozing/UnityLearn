@@ -27,8 +27,6 @@ public class PlayerController : MonoBehaviour
         Managers.Input.MouseAction += OnMouseClicked;
     }
 
-    float wait_run_ratio = 0.0f;
-
 #region States
     void UpdateDie()
     {
@@ -53,21 +51,15 @@ public class PlayerController : MonoBehaviour
         }
 
         // anim set
-        wait_run_ratio = Mathf.Lerp(wait_run_ratio, 1, 20.0f * Time.deltaTime);
 
         Animator anim = GetComponent<Animator>();
-        anim.Play("WAIT_RUN");
-        anim.SetFloat("wait_run_ratio", wait_run_ratio);
     }
 
     void UpdateIdle()
     {
         // anim set
-        wait_run_ratio = Mathf.Lerp(wait_run_ratio, 0, 20.0f * Time.deltaTime);
 
         Animator anim = GetComponent<Animator>();
-        anim.Play("WAIT_RUN");
-        anim.SetFloat("wait_run_ratio", wait_run_ratio);
     }
 
 #endregion
