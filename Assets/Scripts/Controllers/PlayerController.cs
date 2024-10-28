@@ -53,16 +53,17 @@ public class PlayerController : MonoBehaviour
         // anim set
 
         Animator anim = GetComponent<Animator>();
+        anim.SetFloat("speed", _speed);
     }
 
     void UpdateIdle()
     {
         // anim set
-
         Animator anim = GetComponent<Animator>();
+        anim.SetFloat("speed", 0);
     }
 
-#endregion
+    #endregion
 
 
     // GameObject (Player)
