@@ -1,31 +1,35 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class Managers : MonoBehaviour
 {
-    static Managers s_instance; // À¯ÀÏ¼ºÀÌ º¸ÀåµÈ´Ù.
-    // ¿ÜºÎ¿¡¼­ °´Ã¼¸¦ ÂüÁ¶ÇÏ±æ ¿øÇÏÁö ¾Ê±â ¶§¹®¿¡ Á¢±Ù ÁöÁ¤ÀÚ¸¦ ¼öÁ¤Çß´Ù.
-    static Managers Instance { get { Init(); return s_instance; } }
+    static Managers s_instance; // ìœ ì¼ì„±ì´ ë³´ì¥ëœë‹¤
+    static Managers Instance { get { Init(); return s_instance; } } // ìœ ì¼í•œ ë§¤ë‹ˆì €ë¥¼ ê°–ê³ ì˜¨ë‹¤
 
+    DataManager _data = new DataManager();
     InputManager _input = new InputManager();
+    PoolManager _pool = new PoolManager();
     ResourceManager _resource = new ResourceManager();
+    SceneManagerEx _scene = new SceneManagerEx();
+    SoundManager _sound = new SoundManager();
+    UIManager _ui = new UIManager();
 
-    // ÇÁ·ÎÆÛÆ¼¸¦ »ç¿ëÇØ¼­ ±ò²ûÇÏ°Ô ºÒ·¯¿Ã ¼ö ÀÖµµ·Ï.
-    // À¯ÀÏÇÑ °´Ã¼ÀÎ s_instanceÀÇ ¸â¹ö _inputÀ» ¹İÈ¯ÇÑ´Ù.
+    public static DataManager Data { get { return Instance._data; } }
     public static InputManager Input { get { return Instance._input; } }
+    public static PoolManager Pool { get { return Instance._pool; } }
     public static ResourceManager Resource { get { return Instance._resource; } }
+    public static SceneManagerEx Scene { get { return Instance._scene; } }
+    public static SoundManager Sound { get { return Instance._sound; } }
+    public static UIManager UI { get { return Instance._ui; } }
 
     void Start()
     {
-        // ¸Å´ÏÀú °´Ã¼ °¡Á®¿À±â
         Init();
-
-    }
+	}
 
     void Update()
     {
-        // ¸Å Æ½¸¶´Ù Å° ¸Å´ÏÀúÀÇ Update()¸¦ È£Ãâ½ÃÅ´.
         _input.OnUpdate();
     }
 
@@ -33,19 +37,28 @@ public class Managers : MonoBehaviour
     {
         if (s_instance == null)
         {
-            GameObject obj = GameObject.Find("@Managers");
-
-            if (!obj)
+			GameObject go = GameObject.Find("@Managers");
+            if (go == null)
             {
-                obj = new GameObject { name = "@Managers" };
-                obj.AddComponent<Managers>();
+                go = new GameObject { name = "@Managers" };
+                go.AddComponent<Managers>();
             }
 
-            // À¢¸¸ÇØ¼­´Â »èÁ¦µÇÁö ¾Êµµ·Ï ÇÔ.
-            DontDestroyOnLoad(obj);
+            DontDestroyOnLoad(go);
+            s_instance = go.GetComponent<Managers>();
 
-            s_instance = obj.GetComponent<Managers>();
-        }
+            s_instance._data.Init();
+            s_instance._pool.Init();
+            s_instance._sound.Init();
+        }		
+	}
 
+    public static void Clear()
+    {
+        Input.Clear();
+        Sound.Clear();
+        Scene.Clear();
+        UI.Clear();
+        Pool.Clear();
     }
 }

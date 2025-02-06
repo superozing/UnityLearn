@@ -1,148 +1,92 @@
-using System;
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public class PlayerController : MonoBehaviour
 {
-    [SerializeField] // ¸¦ »ç¿ëÇÏ¸é privateµµ ¿¡µğÅÍ¿¡ Ç¥½Ã½ÃÅ³ ¼ö ÀÖ´Ù.
+    [SerializeField]
     float _speed = 10.0f;
 
-    Vector3 _destPos = Vector3.zero;
-    PlayerState _state = PlayerState.Idle;
-
-    public enum PlayerState
-    {
-        Die,
-        Moving,
-        Idle,
-    }
-
+	Vector3 _destPos;
 
     void Start()
     {
-        // ÀÔ·Â ¸Å´ÏÀú ÀÌº¥Æ®¿¡ µ¨¸®°ÔÀÌÆ®¸¦ µî·Ï½ÃÅ´.
-        Managers.Input.MouseAction -= OnMouseClicked;
-        Managers.Input.MouseAction += OnMouseClicked;
-    }
+		Managers.Input.MouseAction -= OnMouseClicked;
+		Managers.Input.MouseAction += OnMouseClicked;		
+	}
 
-#region States
-    void UpdateDie()
+	public enum PlayerState
+	{
+		Die,
+		Moving,
+		Idle,
+	}
+
+	PlayerState _state = PlayerState.Idle;
+
+	void UpdateDie()
+	{
+		// ì•„ë¬´ê²ƒë„ ëª»í•¨
+
+	}
+
+	void UpdateMoving()
+	{
+		Vector3 dir = _destPos - transform.position;
+		if (dir.magnitude < 0.0001f)
+		{
+			_state = PlayerState.Idle;
+		}
+		else
+		{
+			float moveDist = Mathf.Clamp(_speed * Time.deltaTime, 0, dir.magnitude);
+			transform.position += dir.normalized * moveDist;
+			transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(dir), 20 * Time.deltaTime);
+		}
+
+		// ì• ë‹ˆë©”ì´ì…˜
+		Animator anim = GetComponent<Animator>();
+		// í˜„ì¬ ê²Œì„ ìƒíƒœì— ëŒ€í•œ ì •ë³´ë¥¼ ë„˜ê²¨ì¤€ë‹¤
+		anim.SetFloat("speed", _speed);
+	}
+
+	void UpdateIdle()
+	{
+		// ì• ë‹ˆë©”ì´ì…˜
+		Animator anim = GetComponent<Animator>();
+
+		anim.SetFloat("speed", 0);
+	}
+
+	void Update()
     {
-    }
+		switch (_state)
+		{
+			case PlayerState.Die:
+				UpdateDie();
+				break;
+			case PlayerState.Moving:
+				UpdateMoving();
+				break;
+			case PlayerState.Idle:
+				UpdateIdle();
+				break;
+		}
+	}
 
-    void UpdateMoving()
-    {
-        Vector3 unnormDir = _destPos - transform.position;
+	void OnMouseClicked(Define.MouseEvent evt)
+	{
+		if (_state == PlayerState.Die)
+			return;
 
-        // float ¿ÀÂ÷ ¹üÀ§¸¦ »ı°¢ÇØ¼­ ¸ÅÁ÷ ³Ñ¹ö »ç¿ë
-        // ¸¸¾à destPos¿¡ µµÂøÇßÀ» °æ¿ì, Idle state·Î º¯°æ
-        if (unnormDir.magnitude < 0.0001f)
-        {
-            _state = PlayerState.Idle; 
-        }
-        else
-        {
-            // ´õ Å« ¹üÀ§¸¦ ÀÌµ¿ÇÏÁö ¾Êµµ·Ï clamp
-            float moveDist = Math.Clamp(_speed * Time.deltaTime, 0, unnormDir.magnitude);
-            transform.position += unnormDir.normalized * moveDist;
-            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(unnormDir), 20 * Time.deltaTime);
-        }
+		Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+		Debug.DrawRay(Camera.main.transform.position, ray.direction * 100.0f, Color.red, 1.0f);
 
-        // anim set
-
-        Animator anim = GetComponent<Animator>();
-        anim.SetFloat("speed", _speed);
-    }
-
-    void UpdateIdle()
-    {
-        // anim set
-        Animator anim = GetComponent<Animator>();
-        anim.SetFloat("speed", 0);
-    }
-
-    #endregion
-
-
-    // GameObject (Player)
-    // Transform
-    // PlayerController (current)
-    void Update()
-    {
-        #region ÁÖ¼®
-        // =======================
-        //  Transform, translate
-        // =======================
-        // transform - ÇØ´ç ¿ÀºêÁ§Æ®¿¡ ÀÖ´Â Æ®·£½ºÆû ÄÄÆ÷³ÍÆ®
-        // TransformDirection() - transform directionÀ» local ÁÂÇ¥°è¿¡¼­ world ÁÂÇ¥°è·Î º¯È¯ ÈÄ ¹İÈ¯
-        // InverseTransformDirection() - transform directionÀ» world ÁÂÇ¥°è¿¡¼­ local ÁÂÇ¥°è·Î º¯È¯ ÈÄ ¹İÈ¯
-        // transform.translate() -  local ÁÂÇ¥°è ±âÁØÀ¸·Î ¿¬»êÇØÁÜ.
-
-        // =======================
-        //  Vector3
-        // =======================
-        // Vector3 vec3 = new Vector3();
-        // float len = vec3.magnitude; // º¤ÅÍÀÇ Å©±â¸¦ ¹İÈ¯
-        // Vector3 dir = vec3.normalized; // Á¤±ÔÈ­µÈ º¤ÅÍ¸¦ ¹İÈ¯
-
-
-        // ======================== 
-        //  Rotation
-        // ======================== 
-        // transform.rotation; ÄõÅÍ´Ï¾ğÀ» »ç¿ëÇÑ ·ÎÅ×ÀÌ¼Ç(Åë»óÀû)
-        // transform.eulerAngles; // ¿ÀÀÏ·¯ °¢µµ¸¦ »ç¿ëÇÑ È¸Àü
-
-
-        // ¿ÀÀÏ·¯ ¾Ş±ÛÀº ¸Å¹ø °ªÀ» ¼¼ÆÃÇØÁÖ¾î¾ß ÇÑ´Ù°í À¯´ÏÆ¼ °ø½Ä ¹®¼­¿¡ ÀûÇôÀÖ´Ù.
-        // eulerAnglesÀÇ °ªÀ» Á÷Á¢ ¼öÁ¤ÇÏ¸é ¾ÈµÈ´Ù. 360µµ¸¦ ³Ñ¾î¼³ °æ¿ì ¿À·ù°¡ »ı±ä´Ù°í ÇØ¿ä.
-
-        // Àı´ë°ª ÁöÁ¤À¸·Î È¸Àü ¼¼ÆÃ
-        // transform.eulerAngles = new Vector3(0.0f, _yAngle, 0.0f);
-
-        // Rotate() - ¿øº» °ªÀ» ÀÎÀÚ·Î µé¾î¿Â °ª ¸¸Å­ ´õÇØÁØ´Ù.
-        // transform.Rotate(new Vector3(0.0f, deltaSpeed, 0.0f));
-
-
-        // ¿ÀÀÏ·¯ ¾Ş±Û ´ë½Å ÄõÅÍ´Ï¾ğ(»ç¿ø¼ö)¸¦ »ç¿ëÇÏ´Â ÀÌÀ¯: Áü¹ú·Ï
-        // È¸ÀüÇÏ´Â µÎ ÃàÀÌ °ãÄ¥ °æ¿ì ÃàÀÇ Á¦¾î±ÇÀ» ÀÒ¾î¹ö¸®´Â Çö»ó.
-
-        // ÄõÅÍ´Ï¾ğÀ» »ç¿ëÇØ¼­ Á¤È®ÇÑ È¸ÀüÀ» ±¸ÇöÇÒ ¼ö ÀÖ°í, Áü¹ú¶ô ÇØ°á °¡´É.
-        // var quat = transform.rotation;
-
-        // euler angle -> quaternionÀ¸·Î º¯È¯ÇÏ´Â ÇÔ¼ö
-        // transform.rotation = Quaternion.Euler(new Vector3(0.0f, _yAngle, 0.0f));
-        #endregion
-
-        switch (_state)
-        {
-            case PlayerState.Die:
-                UpdateDie();
-                break;
-            case PlayerState.Moving:
-                UpdateMoving();
-                break;
-            case PlayerState.Idle:
-                UpdateIdle();
-                break;
-        }
-
-    }
-
-    void OnMouseClicked(Define.MouseEvent e)
-    {
-        if (_state == PlayerState.Die)
-            return;
-
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        Debug.DrawRay(Camera.main.transform.position, ray.direction * 100.0f, Color.red, 1.0f);
-
-        RaycastHit hit;
-        if (Physics.Raycast(ray, out hit, 100.0f, LayerMask.GetMask("Wall")))
-        {
-            _destPos = hit.point;
-            _state = PlayerState.Moving;  // state¸¦ movingÀ¸·Î º¯°æ
-        }
-    }
+		RaycastHit hit;
+		if (Physics.Raycast(ray, out hit, 100.0f, LayerMask.GetMask("Wall")))
+		{
+			_destPos = hit.point;
+			_state = PlayerState.Moving;
+		}
+	}
 }
